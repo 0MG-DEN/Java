@@ -25,23 +25,17 @@ public class Employee implements Serializable {
         this.deleted = false;
     }
 
-    public Employee(int depNum, String fio, double salary) {
+    public Employee(int depNum, String fio, double salary) throws IllegalArgumentException {
         this.tabNum = nextTabNum++;
         this.hireDate = new Date();
 
-        try {
-            if (depNum <= 0 || fio == null || salary <= 0) {
-                throw new IllegalArgumentException();
-            }
-            this.depNum = depNum;
-            this.fio = fio;
-            this.salary = salary;
-            this.deleted = false;
+        if (depNum <= 0 || fio == null || salary <= 0) {
+            throw new IllegalArgumentException("");
         }
-        catch (IllegalArgumentException e) {
-            e.printStackTrace();
-            new Employee();
-        }
+        this.depNum = depNum;
+        this.fio = fio;
+        this.salary = salary;
+        this.deleted = false;
     }
 
     public byte[] toByteArray() {
@@ -54,8 +48,7 @@ public class Employee implements Serializable {
             byteStream.flush();
             byteStream.close();
             return byteStream.toByteArray();
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
@@ -63,16 +56,19 @@ public class Employee implements Serializable {
 
     static public Employee fromByteArray(byte[] inputByteArray) {
         try {
-            if(inputByteArray == null) throw new NullPointerException();
+            if (inputByteArray == null) throw new NullPointerException();
             ByteArrayInputStream byteStream = new ByteArrayInputStream(inputByteArray);
-            try(ObjectInputStream objectStream = new ObjectInputStream(byteStream)) {
+            try (ObjectInputStream objectStream = new ObjectInputStream(byteStream)) {
                 return (Employee) objectStream.readObject();
             }
-        }
-        catch (IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getTabNumFormat() {
+        return '#' + String.format("%07d", tabNum);
     }
 
     public int getDepNum() {
@@ -103,6 +99,6 @@ public class Employee implements Serializable {
                 ", fio=" + fio +
                 ", salary=" + String.format("%.2f", salary) +
                 ", hireDate=" + dateFormat.format(hireDate) +
-                '}';
+                '}' + (isDeleted() ? " [deleted]" : "") ;
     }
 }
