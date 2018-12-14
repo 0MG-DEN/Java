@@ -9,13 +9,13 @@ import java.util.*;
 public class MainWindow extends JFrame {
     private final static int constraint = 350;
     private final static String statusHead = " Status: ";
+    private static SearchWindow searchWindow = null;
 
     public MainWindow() throws HeadlessException {
         JFrame self = this;
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JLabel status = new JLabel(statusHead + "");
+        JLabel status = new JLabel(statusHead);
         DefaultListModel<Employee> listModel = new DefaultListModel();
         JList listView = new JList(listModel);
         JScrollPane scrollPane = new JScrollPane(listView);
@@ -26,7 +26,7 @@ public class MainWindow extends JFrame {
         listView.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
-                
+
             }
 
             @Override
@@ -66,7 +66,7 @@ public class MainWindow extends JFrame {
         formPanel.add(new JLabel("Salary:"));
         formPanel.add(salaryInput);
 
-        submit.addActionListener(new AbstractAction() {
+        submit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -88,22 +88,29 @@ public class MainWindow extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
         JMenuItem load = new JMenuItem("Load");
-        JMenuItem save = new JMenuItem("Save");
+        JMenuItem save = new JMenuItem("Save as");
+        JMenuItem exit = new JMenuItem("Exit");
         JMenu sortMenu = new JMenu("Sort by...");
         JMenuItem byDepNum = new JMenuItem("dep.num.");
         JMenuItem byFio = new JMenuItem("full name");
         JMenuItem byHireDate = new JMenuItem("hire date");
+        JMenu searchMenu = new JMenu("Search by...");
+        JMenuItem sByFio = new JMenuItem("full name");
 
         fileMenu.add(load);
         fileMenu.add(save);
+        fileMenu.add(new JSeparator());
+        fileMenu.add(exit);
         sortMenu.add(byDepNum);
         sortMenu.add(byFio);
         sortMenu.add(byHireDate);
+        searchMenu.add(sByFio);
         menuBar.add(fileMenu);
         menuBar.add(sortMenu);
+        menuBar.add(searchMenu);
         setJMenuBar(menuBar);
 
-        load.addActionListener(new AbstractAction() {
+        load.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
@@ -130,7 +137,7 @@ public class MainWindow extends JFrame {
             }
         });
 
-        save.addActionListener(new AbstractAction() {
+        save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser fileChooser = new JFileChooser();
@@ -156,14 +163,21 @@ public class MainWindow extends JFrame {
             }
         });
 
-        byDepNum.addActionListener(new AbstractAction() {
+        exit.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        byDepNum.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 java.util.List<Employee> tempList = new ArrayList<>();
                 for (int i = 0; i < listModel.size(); i++)
                     tempList.add(listModel.get(i));
                 listModel.clear();
-                Collections.sort(tempList, new Comparator<Employee>() {
+                tempList.sort(new Comparator<Employee>() {
                     @Override
                     public int compare(Employee o1, Employee o2) {
                         return Integer.compare(o1.getDepNum(), o2.getDepNum());
@@ -171,17 +185,19 @@ public class MainWindow extends JFrame {
                 });
                 for (Employee emp : tempList)
                     listModel.addElement(emp);
+
+                status.setText(statusHead + "sorted by dep.num.");
             }
         });
 
-        byFio.addActionListener(new AbstractAction() {
+        byFio.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 java.util.List<Employee> tempList = new ArrayList<>();
                 for (int i = 0; i < listModel.size(); i++)
                     tempList.add(listModel.get(i));
                 listModel.clear();
-                Collections.sort(tempList, new Comparator<Employee>() {
+                tempList.sort(new Comparator<Employee>() {
                     @Override
                     public int compare(Employee o1, Employee o2) {
                         return o1.getFio().compareTo(o2.getFio());
@@ -189,17 +205,19 @@ public class MainWindow extends JFrame {
                 });
                 for (Employee emp : tempList)
                     listModel.addElement(emp);
+
+                status.setText(statusHead + "sorted by full name");
             }
         });
 
-        byHireDate.addActionListener(new AbstractAction() {
+        byHireDate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 java.util.List<Employee> tempList = new ArrayList<>();
                 for (int i = 0; i < listModel.size(); i++)
                     tempList.add(listModel.get(i));
                 listModel.clear();
-                Collections.sort(tempList, new Comparator<Employee>() {
+                tempList.sort(new Comparator<Employee>() {
                     @Override
                     public int compare(Employee o1, Employee o2) {
                         return (o1.getHireDate()).compareTo(o2.getHireDate());
@@ -207,6 +225,22 @@ public class MainWindow extends JFrame {
                 });
                 for (Employee emp : tempList)
                     listModel.addElement(emp);
+
+                status.setText(statusHead + "sorted by hire date");
+            }
+        });
+
+        sByFio.addActionListener(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                listView.clearSelection();
+                if(searchWindow == null)
+                    searchWindow = new SearchWindow(listView, listModel);
+                else {
+                    searchWindow.dispose();
+                    searchWindow = new SearchWindow(listView, listModel);
+                }
+                status.setText(statusHead + "searching");
             }
         });
 
